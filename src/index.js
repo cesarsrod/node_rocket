@@ -1,3 +1,4 @@
+const { response } = require('express');
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 
@@ -102,7 +103,46 @@ app.get('/statement/date', verifyIfExsitAccountCPF, (request, response) => {
   const { customer } = request;
   const { date } = request.query;
 
-  const dateFormat = new Date();
+  const dateFormat = new Date(date + ' 00:00');
+
+  const statement = customer.statement.filter(
+    (statement) =>
+      statement.created_at.toDateString() ===
+      new Date(dateFormat.toDateString())
+  );
+
   return response.json(customer.statement);
 });
+
+app.put('/account', verifyIfExsitAccountCPF, (request, response) => {
+  const { name } = request.body;
+  const { customer } = request;
+
+  customer.name = name;
+
+  return response.status(201).send();
+});
+
+app.get('/account', verifyIfExsitAccountCPF, (request, response) => {
+  const { customer } = request;
+
+  return response.json(customer);
+});
+
+app.delete('/account', verifyIfExsitAccountCPF, (request, response) => {
+  const { customer } = request;
+
+  customers.splice(customer, 1);
+
+  return response.status(200).json(customers);
+});
+
+app.get('/balance', verifyIfExsitAccountCPF, (request, response) => {
+  const { customer } = request;
+
+  const balance = getBalance(customer.statement);
+
+  return response.json(balance);
+});
+
 app.listen(3333);
